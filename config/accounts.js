@@ -6,16 +6,35 @@ AccountsTemplates.addFields([{
   displayName: 'username',
   required: true,
   minLength: 2,
+}, {
+  _id: 'invitecode',
+  type: 'text',
+  displayName: 'invitecode',
+  required: true,
+  func: function(code) {
+    if (Meteor.isClient) {
+      Meteor.call('checkInviteCode', code, function(err, iscool) {
+        if (iscool) {
+          self.setSuccess();
+        } else {
+          self.setError('inviteCodeBad');
+        }
+        self.setValidating(false);
+      });
+      return;
+    }
+    return Meteor.call('checkInviteCode', code);
+  },
 }, emailField, passwordField]);
+
 
 AccountsTemplates.configure({
   defaultLayout: 'userFormsLayout',
   defaultContentRegion: 'content',
-  confirmPassword: false,
+  confirmPassword: true,
   enablePasswordChange: true,
   sendVerificationEmail: true,
   showForgotPasswordLink: true,
-  forbidClientAccountCreation : true,
   onLogoutHook() {
     const homePage = 'home';
     if (FlowRouter.getRouteName() === homePage) {
@@ -26,7 +45,7 @@ AccountsTemplates.configure({
   },
 });
 
-['signIn', 'resetPwd', 'forgotPwd', 'enrollAccount'].forEach(
+['signIn', 'signUp', 'resetPwd', 'forgotPwd', 'enrollAccount'].forEach(
   (routeName) => AccountsTemplates.configureRoute(routeName));
 
 // We display the form to change the password in a popup window that already

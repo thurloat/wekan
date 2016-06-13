@@ -188,6 +188,12 @@ Meteor.methods({
 
 if (Meteor.isServer) {
   Meteor.methods({
+    checkInviteCode(inviteCode) {
+      if (inviteCode != process.env.USER_INVITE_CODE) {
+        throw new Meteor.Error('error-user-notCreated');
+      }
+      return true;
+    },
     // we accept userId, username, email
     inviteUserToBoard(username, boardId) {
       check(username, String);
